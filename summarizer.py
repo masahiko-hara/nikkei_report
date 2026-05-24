@@ -4,14 +4,11 @@ import os
 
 load_dotenv()
 
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def summarize_article(text):
 
-    # 長すぎる記事対策（重要）
     text = text[:8000]
 
     response = client.chat.completions.create(
@@ -23,13 +20,18 @@ def summarize_article(text):
                 "content": """
 あなたは金融アナリストです。
 
-以下の記事について：
+以下の形式で必ず出力してください：
 
-・何が起きたか
-・金融政策への影響
-・マーケットへの影響
+<h3>概要</h3>
+<p>記事の内容を簡潔に説明</p>
 
-を簡潔に日本語で要約してください。
+<h3>金融政策への影響</h3>
+<p>日銀の政策・金利・為替への影響</p>
+
+<h3>マーケットへの影響</h3>
+<p>株式・債券・為替への影響</p>
+
+短く、読みやすく書いてください。
 """
             },
             {

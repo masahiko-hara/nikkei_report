@@ -12,9 +12,22 @@ KEYWORDS = [
 ]
 
 
+# =========================
+# スコアリング（軽めに調整）
+# =========================
 def calculate_score(title, text):
     combined = title + text
-    return sum(combined.count(k) for k in KEYWORDS)
+
+    title_weight = 3
+    text_weight = 1
+
+    score = 0
+
+    for kw in KEYWORDS:
+        score += title.count(kw) * title_weight
+        score += text.count(kw) * text_weight
+
+    return score
 
 
 def is_recent_article(date_text):
@@ -30,6 +43,9 @@ def is_recent_article(date_text):
         return False
 
 
+# =========================
+# HTML生成
+# =========================
 def create_html_report(results):
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -42,13 +58,15 @@ def create_html_report(results):
     <head>
         <meta charset="utf-8">
         <title>日銀ニュース {today_str}</title>
+
         <style>
             body {{
                 font-family: sans-serif;
                 background: #f5f5f5;
                 margin: 40px;
-                line-height: 1.7;
+                line-height: 1.6;
             }}
+
             .card {{
                 background: white;
                 padding: 20px;
@@ -56,12 +74,24 @@ def create_html_report(results):
                 border-radius: 10px;
                 box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             }}
-            a {{ color: blue; }}
+
+            a {{ color: #1a73e8; }}
+
+            .summary h3 {{
+                margin-top: 20px;
+                border-left: 4px solid #4a90e2;
+                padding-left: 8px;
+            }}
+
+            .summary p {{
+                margin: 6px 0 14px 0;
+            }}
         </style>
     </head>
+
     <body>
-    <h1>日銀ニュース {today_str}</h1>
-    <p><a href="index.html">← 一覧へ戻る</a></p>
+        <h1>日銀ニュース {today_str}</h1>
+        <p><a href="index.html">← 一覧へ戻る</a></p>
     """
 
     for r in results:
@@ -73,8 +103,10 @@ def create_html_report(results):
             <p><b>投稿日:</b> {r['published']}</p>
             <p><b>スコア:</b> {r['score']}</p>
             <a href="{r['url']}">記事リンク</a>
-            <h3>要約</h3>
-            <p>{summary}</p>
+
+            <div class="summary">
+                {summary}
+            </div>
         </div>
         """
 
@@ -88,6 +120,9 @@ def create_html_report(results):
     update_index(today_str, filename, len(results))
 
 
+# =========================
+# index更新
+# =========================
 def update_index(date_str, filename, count):
     index_path = os.path.join(OUTPUT_DIR, "index.html")
 
@@ -100,16 +135,6 @@ def update_index(date_str, filename, count):
         <head>
             <meta charset="utf-8">
             <title>日銀ニュース一覧</title>
-            <style>
-                body { font-family: sans-serif; margin: 40px; }
-                .card {
-                    background: #fff;
-                    padding: 15px;
-                    margin-bottom: 10px;
-                    border-radius: 8px;
-                    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-                }
-            </style>
         </head>
         <body>
         <h1>日銀ニュース一覧</h1>
@@ -131,10 +156,9 @@ def update_index(date_str, filename, count):
     print("index更新:", index_path)
 
 
-# ======================
+# =========================
 # メイン処理
-# ======================
-
+# =========================
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=False)
     page = browser.new_page()
@@ -197,7 +221,8 @@ with sync_playwright() as p:
 
         score = calculate_score(article["title"], text)
 
-        if score >= 5:
+        # ⭐ここが重要：緩和
+        if score >= 2:
             results.append({
                 "title": article["title"],
                 "url": article["url"],
@@ -206,7 +231,9 @@ with sync_playwright() as p:
                 "text": text
             })
 
+    # ⭐最低5件は見せる（UX改善）
     results.sort(key=lambda x: x["score"], reverse=True)
+    results = results[:5]
 
     print("===== 記事 =====")
     for r in results:
