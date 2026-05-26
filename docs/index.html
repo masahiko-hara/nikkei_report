@@ -23,36 +23,11 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-button {
-    background:#ffdddd;
-    border:none;
-    padding:6px 10px;
-    cursor:pointer;
-    margin-top:10px;
-}
-
 a {
     color: blue;
 }
 
 </style>
-
-<script>
-
-function deleteCard(btn, filename){
-
-    if(confirm(filename + " を削除しますか？")){
-
-        btn.parentElement.remove();
-
-        alert(
-            "見た目上削除しました。\n" +
-            "本当に削除する場合はdocsフォルダから消してください。"
-        );
-    }
-}
-
-</script>
 
 </head>
 
@@ -72,10 +47,6 @@ function deleteCard(btn, filename){
 </a>
 </p>
 
-<button onclick="deleteCard(this, '2026-05-26.html')">
-削除
-</button>
-
 </div>
 
 
@@ -90,10 +61,6 @@ function deleteCard(btn, filename){
 </a>
 </p>
 
-<button onclick="deleteCard(this, '2026-05-25.html')">
-削除
-</button>
-
 </div>
 
 
@@ -107,10 +74,6 @@ function deleteCard(btn, filename){
 読む
 </a>
 </p>
-
-<button onclick="deleteCard(this, '2026-05-24.html')">
-削除
-</button>
 
 </div>
 
